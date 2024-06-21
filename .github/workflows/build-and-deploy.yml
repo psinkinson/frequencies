@@ -1,12 +1,10 @@
-# This workflow will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-nodejs
-
-name: Build and Deploy
+name: Angular Build and Deploy
 
 on:
   push:
-    branches: [ "main" ]
-
+    branches:
+      - main
+      
 permissions:
   contents: write
 
@@ -14,19 +12,20 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-    - name: Use Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: 20
-        cache: 'npm'
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-    - name: Build Angular app to prod
-      run: npm install && npm run build:prod
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
 
-    - name: Deploy to GitHub Pages
-      uses: JamesIves/github-pages-deploy-action@v4.6.1
-      with:
-        folder: dist/browser 
+      - name: Build Angular app to prod
+        working-directory: frequencies
+        run: npm install && npm run build:prod
 
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: frequencies/dist/browser
+          branch: main  
