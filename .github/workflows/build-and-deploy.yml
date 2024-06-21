@@ -9,7 +9,7 @@ on:
 
 permissions:
   contents: write
-  
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -25,8 +25,8 @@ jobs:
     - name: Build Angular app to prod
       run: npm install && npm run build:prod
 
-    - name: Deploy 🚀
-        uses: JamesIves/github-pages-deploy-action@v4
-        with:
-          folder: build/browser
+    - name: Deploy to GitHub Pages
+      uses: JamesIves/github-pages-deploy-action@v4.6.1
+      with:
+        folder: build/browser 
 
