@@ -9,7 +9,6 @@ import { Validators } from '@angular/forms';
   imports: [CommonModule, RouterOutlet],
   template: `
     <div class="container">
-      <h1>Welcome to {{title}}!</h1>
       <div class="button-group">
         <button (click)="crownChakra()" class="btn">Crown Chakra</button>
         <button (click)="thirdEyeChakra()" class="btn">Third Eye Chakra</button>
