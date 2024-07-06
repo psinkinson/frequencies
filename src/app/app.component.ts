@@ -1,8 +1,14 @@
 import { Component, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
-import { Validators } from '@angular/forms';
 
+type BtnSelection = '' | 'CROWN' | 'THIRD_EYE' | 'THROAT' | 'HEART' | 'SOLAR_PLEXUS' | 'SACRAL' | 'ROOT'
+
+type Btn = {
+  name: string,
+  typ: BtnSelection,
+  hz: number
+}
 @Component({
   selector: 'app-root',
   standalone: true,
@@ -10,13 +16,12 @@ import { Validators } from '@angular/forms';
   template: `
     <div class="container">
       <div class="button-group">
-        <button (click)="crownChakra()" class="btn">Crown Chakra</button>
-        <button (click)="thirdEyeChakra()" class="btn">Third Eye Chakra</button>
-        <button (click)="throatChakra()" class="btn">Throat Chakra</button>
-        <button (click)="heartChakra()" class="btn">Heart Chakra</button>
-        <button (click)="solarPlexusChakra()" class="btn">Solar Plexus Chakra</button>
-        <button (click)="sacralChakra()" class="btn">Sacral Chakra</button>
-        <button (click)="rootChakra()" class="btn">Root Chakra</button>
+        @for (btn of btns; track $index) {
+            <button (click)="setFreq(btn)" class="btn btn--{{btn.typ}}" [class.btn--selected]="btn.typ === selectedButton()">
+            {{btn.name}} Chakra
+            <div>{{btn.hz}}Hz</div>
+          </button>
+        }
       </div>
 
       <hr>
@@ -41,7 +46,17 @@ export class AppComponent {
   private osc2: any;
   private initialised = false;
   private running = false;
+  public btns: Btn[] = [
+    { name: 'Crown', typ: 'CROWN', hz: 963 },
+    { name: 'Third Eye', typ: 'THIRD_EYE', hz: 852 },
+    { name: 'Throat', typ: 'THROAT', hz: 741 },
+    { name: 'Heart', typ: 'HEART', hz: 639 },
+    { name: 'Solar Plexus', typ: 'SOLAR_PLEXUS', hz: 528 },
+    { name: 'Sacral', typ: 'SACRAL', hz: 417 },
+    { name: 'Root', typ: 'ROOT', hz: 396 },
+  ];
 
+  public selectedButton = signal<BtnSelection>('')
   public leftStereo = signal(300);
   public rightStereo = signal(303.875);
   public diff = signal(5);
@@ -186,6 +201,11 @@ export class AppComponent {
   }
   public rootChakra() {
     this.setTone(396);
+  }
+
+  public setFreq(btn:Btn) {
+    this.setTone(btn.hz)
+    this.selectedButton.set(btn.typ)
   }
 
   private setTone(freq: number) {

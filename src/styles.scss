@@ -11,9 +11,60 @@
 }
 
 .btn {
-    border: 1px solid #333;
-    background-color: rgb(67, 70, 219);
+    border: 2px solid #333;
+    // border-width: 2px 2px 2px 18px;
+    background-color:#fff;
+    // border: 0;
+    // background-color: rgb(67, 70, 219);
     padding: 10px;
-    border-radius: 4px;
-    color: white;
+    border-radius: 16px;
+    color: 900;
+    font-size: large;
+    transition:all 0.25s;
+}
+.btn--selected {
+    // padding-top: 15px;
+    // padding-bottom: 15px;
+}
+.btn--CROWN {
+    border-color:#D55DF0;
+    &.btn--selected {
+        background-color:rgba(213, 93, 240, 0.168); 
+    }
+}
+.btn--THIRD_EYE {
+    border-color:#4583ED;
+    &.btn--selected {
+        background-color:rgba(69, 131, 237, 0.206);
+    }
+}
+.btn--THROAT {
+    border-color:#3AD4D2;
+    &.btn--selected {
+        background-color:#3ad4d147;
+    }
+}
+.btn--HEART {
+    border-color:#90D33A;
+    &.btn--selected {
+        background-color: rgba(145, 211, 58, 0.12);
+    }
+}
+.btn--SOLAR_PLEXUS {
+    border-color:#F4CA1B;
+    &.btn--selected {
+        background-color:rgba(244, 201, 27, 0.269);
+    }
+}
+.btn--SACRAL {
+    border-color:#F79321;
+    &.btn--selected {
+        background-color:rgba(245, 113, 42, 0.171);
+    }
+}
+.btn--ROOT {
+    border-color:#E53C51;
+    &.btn--selected {
+        background-color:rgba(229, 60, 80, 0.222);
+    }
 }
