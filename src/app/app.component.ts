@@ -2,12 +2,13 @@ import { Component, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
 
-type BtnSelection = '' | 'CROWN' | 'THIRD_EYE' | 'THROAT' | 'HEART' | 'SOLAR_PLEXUS' | 'SACRAL' | 'ROOT'
+type BtnSelection = '' | 'CROWN' | 'THIRD_EYE' | 'THROAT' | 'HEART' | 'SOLAR_PLEXUS' | 'SACRAL' | 'ROOT' | 'DELTA' | 'THETA' | 'ALPHA' | 'BETA'
 
 type Btn = {
   name: string,
   typ: BtnSelection,
-  hz: number
+  hzL: number,
+  hzR: number
 }
 @Component({
   selector: 'app-root',
@@ -16,10 +17,14 @@ type Btn = {
   template: `
     <div class="container">
       <div class="button-group">
-        @for (btn of btns; track $index) {
-            <button (click)="setFreq(btn)" class="btn btn--{{btn.typ}}" [class.btn--selected]="btn.typ === selectedButton()">
-            {{btn.name}} Chakra
-            <div>{{btn.hz}}Hz</div>
+        @for (btn of btnsChakra; track $index) {
+            <button (click)="onClickBtn(btn)" class="btn btn--{{btn.typ}}" [class.btn--selected]="btn.typ === selectedButton()">
+            {{btn.name}}
+            @if (btn.hzL === btn.hzR) {
+              <div>{{btn.hzL}}Hz</div>
+            } @else {
+               <div>{{btn.hzR - btn.hzL}}Hz</div>
+            }
           </button>
         }
       </div>
@@ -29,8 +34,8 @@ type Btn = {
       <button (click)="start()">Start</button>
       <button (click)="stop()">Stop</button>
 
-      <input id="leftStereo" type="number" [value]="leftStereo()" (change)="updateLeftStereo($event)" />
-      <input id="rightStereo" type="number" [value]="rightStereo()" (change)="updateRightStereo($event)" />
+      <input id="leftStereo" type="number" [value]="leftSignal()" (change)="updateLeftSignal($event)" />
+      <input id="rightStereo" type="number" [value]="rightSignal()" (change)="updateRightSignal($event)" />
       <input id="dif" type="number" [value]="diff()" (change)="updateDiff($event)" />
     </div>
     <router-outlet></router-outlet>
@@ -46,19 +51,23 @@ export class AppComponent {
   private osc2: any;
   private initialised = false;
   private running = false;
-  public btns: Btn[] = [
-    { name: 'Crown', typ: 'CROWN', hz: 963 },
-    { name: 'Third Eye', typ: 'THIRD_EYE', hz: 852 },
-    { name: 'Throat', typ: 'THROAT', hz: 741 },
-    { name: 'Heart', typ: 'HEART', hz: 639 },
-    { name: 'Solar Plexus', typ: 'SOLAR_PLEXUS', hz: 528 },
-    { name: 'Sacral', typ: 'SACRAL', hz: 417 },
-    { name: 'Root', typ: 'ROOT', hz: 396 },
+  public btnsChakra: Btn[] = [
+    { name: 'Crown Chakra ', typ: 'CROWN', hzL: 963, hzR: 963 },
+    { name: 'Third Eye Chakra', typ: 'THIRD_EYE', hzL: 852, hzR: 852 },
+    { name: 'Throat Chakra', typ: 'THROAT', hzL: 741, hzR: 741 },
+    { name: 'Heart Chakra', typ: 'HEART', hzL: 639, hzR: 639 },
+    { name: 'Solar Plexus Chakra', typ: 'SOLAR_PLEXUS', hzL: 528, hzR: 528 },
+    { name: 'Sacral Chakra', typ: 'SACRAL', hzL: 417, hzR:417  },
+    { name: 'Root Chakra', typ: 'ROOT', hzL: 396, hzR: 396 },
+    { name: 'Delta', typ: 'DELTA', hzL: 300, hzR: 303 },
+    { name: 'Theta', typ: 'THETA', hzL: 300, hzR: 306 },
+    { name: 'Alpha', typ: 'ALPHA', hzL: 300, hzR: 311 },
+    { name: 'Beta', typ: 'BETA', hzL: 300, hzR: 325 },
   ];
 
   public selectedButton = signal<BtnSelection>('')
-  public leftStereo = signal(300);
-  public rightStereo = signal(303.875);
+  public leftSignal = signal(300);
+  public rightSignal = signal(303.875);
   public diff = signal(5);
 
   constructor() {
@@ -99,10 +108,10 @@ export class AppComponent {
 
     //Tone 1
     this.osc1 = this.channel1.createOscillator() //default frequency is 440HZ
-    this.osc1.frequency.value = this.rightStereo();
+    this.osc1.frequency.value = this.rightSignal();
     //Tone 2
     this.osc2 = this.channel2.createOscillator()
-    this.osc2.frequency.value = this.rightStereo();
+    this.osc2.frequency.value = this.rightSignal();
 
     //Channel 1 Left Stereo
     const leftStereo = new StereoPannerNode(this.channel1)
@@ -121,13 +130,11 @@ export class AppComponent {
     // osc1.connect(this.channel1.destination)
     // osc2.connect(this.channel2.destination)
 
+    this.initialised = true;
 
-    
     //Play
     this.osc1.start()
     this.osc2.start()
-
-    this.initialised = true;
     this.running = true;
 
   } 
@@ -161,14 +168,14 @@ export class AppComponent {
     }
   }
 
-  public updateLeftStereo(event: any) {
+  public updateLeftSignal(event: any) {
     console.log(event, event.target.value, parseInt(event.target.value));
-    this.leftStereo.set(parseInt(event.target.value));
+    this.leftSignal.set(parseInt(event.target.value));
   }
 
-  public updateRightStereo(event: any) {
+  public updateRightSignal(event: any) {
     const val = parseInt(event.target.value);
-    this.rightStereo.set(val);
+    this.rightSignal.set(val);
     if(this.running) {
       this.osc2.frequency.value = val;
     }
@@ -176,54 +183,32 @@ export class AppComponent {
   public updateDiff(event: any) {
     const val = parseInt(event.target.value);
     this.diff.set(val);
-    const left = this.leftStereo();
-    this.rightStereo.set(left + val);
+    const left = this.leftSignal();
+    this.rightSignal.set(left + val);
     this.updateTone();
   }
 
-  public crownChakra() {
-    this.setTone(963);
-  }
-  public thirdEyeChakra() {
-    this.setTone(852);
-  }
-  public throatChakra() {
-    this.setTone(741);
-  }
-  public heartChakra() {
-    this.setTone(639);
-  }
-  public solarPlexusChakra() {
-    this.setTone(528);
-  }
-  public sacralChakra() {
-    this.setTone(417);
-  }
-  public rootChakra() {
-    this.setTone(396);
-  }
-
-  public setFreq(btn:Btn) {
-    this.setTone(btn.hz)
+  public onClickBtn(btn:Btn) {
+    this.setTone(btn.hzL, btn.hzR)
     this.selectedButton.set(btn.typ)
   }
 
-  private setTone(freq: number) {
+  private setTone(hzL: number, hzR: number) {
     this.setup();
-    this.osc1.frequency.value = freq;
-    this.osc2.frequency.value = freq;
+    this.osc1.frequency.value = hzL;
+    this.osc2.frequency.value = hzR;
     this.start();
   }
 
   private setDiff() {
-    const left = this.leftStereo();
-    const right = this.rightStereo();
+    const left = this.leftSignal();
+    const right = this.rightSignal();
     this.diff.set(right - left);
     this.updateTone();
   }
   private updateTone() {
     if(this.running) {
-    this.osc2.frequency.value = this.rightStereo();
+    this.osc2.frequency.value = this.rightSignal();
     }
   }
 }
