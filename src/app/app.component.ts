@@ -15,15 +15,16 @@ type Btn = {
   standalone: true,
   imports: [CommonModule, RouterOutlet],
   template: `
-    <div class="container">
+    <div class="layout">
+     <div class="container">
       <div class="button-group">
         @for (btn of btnsChakra; track $index) {
             <button (click)="onClickBtn(btn)" class="btn btn--{{btn.typ}}" [class.btn--selected]="btn.typ === selectedButton()">
             {{btn.name}}
             @if (btn.hzL === btn.hzR) {
-              <div>{{btn.hzL}}Hz</div>
+              <span>{{btn.hzL}}Hz</span>
             } @else {
-               <div>{{btn.hzR - btn.hzL}}Hz</div>
+              <span>{{btn.hzR - btn.hzL}}Hz</span>
             }
           </button>
         }
@@ -31,12 +32,15 @@ type Btn = {
 
       <hr>
 
-      <button (click)="start()">Start</button>
-      <button (click)="stop()">Stop</button>
-
       <input id="leftStereo" type="number" [value]="leftSignal()" (change)="updateLeftSignal($event)" />
       <input id="rightStereo" type="number" [value]="rightSignal()" (change)="updateRightSignal($event)" />
       <input id="dif" type="number" [value]="diff()" (change)="updateDiff($event)" />
+     </div>
+
+     <div class="controls">
+      <button class="btn btn--control" (click)="play()" [disabled]="!selectedButton() || running()">Play</button>
+      <button class="btn btn--control" (click)="stop()" [disabled]="!running()">Stop</button>
+     </div>
     </div>
     <router-outlet></router-outlet>
   `,
@@ -50,7 +54,7 @@ export class AppComponent {
   private osc1: any;
   private osc2: any;
   private initialised = false;
-  private running = false;
+  public running = signal(false);
   public btnsChakra: Btn[] = [
     { name: 'Crown Chakra ', typ: 'CROWN', hzL: 963, hzR: 963 },
     { name: 'Third Eye Chakra', typ: 'THIRD_EYE', hzL: 852, hzR: 852 },
@@ -72,14 +76,14 @@ export class AppComponent {
 
   constructor() {
     // effect(() => {
-    //   if(this.running) {
+    //   if(this.running()) {
     //     const val = this.leftStereo();
     //     this.osc1.frequency.value = val;
     //   }
     // });
 
     // effect(() => {
-    //   if(this.running) {
+    //   if(this.running()) {
     //     const val = this.rightStereo();
     //     console.log('effect right stereo', val);
     //     this.osc2.frequency.value = val;
@@ -87,7 +91,7 @@ export class AppComponent {
     // });
 
     // effect(() => {
-    //   if(this.running) {
+    //   if(this.running()) {
     //     const left = this.leftStereo();
     //     const diff = this.diff();
     //     this.leftStereo.set(left + diff);
@@ -135,7 +139,7 @@ export class AppComponent {
     //Play
     this.osc1.start()
     this.osc2.start()
-    this.running = true;
+    this.running.set(true);
 
   } 
 
@@ -146,15 +150,15 @@ export class AppComponent {
       this.channel1.close()
       this.channel2.close()
       this.initialised = false
-      this.running = false
+      this.running.set(false)
     }
   }
 
   stop() {
-    if(this.running) {
+    if(this.running()) {
       this.channel1.suspend()
       this.channel2.suspend()
-      this.running = false
+      this.running.set(false)
     }
   }
 
@@ -162,7 +166,7 @@ export class AppComponent {
     if(this.initialised) {
       this.channel1.resume()
       this.channel2.resume()
-      this.running = true
+      this.running.set(true)
     } else {
       this.setup();
     }
@@ -176,7 +180,7 @@ export class AppComponent {
   public updateRightSignal(event: any) {
     const val = parseInt(event.target.value);
     this.rightSignal.set(val);
-    if(this.running) {
+    if(this.running()) {
       this.osc2.frequency.value = val;
     }
   }
@@ -189,8 +193,18 @@ export class AppComponent {
   }
 
   public onClickBtn(btn:Btn) {
-    this.setTone(btn.hzL, btn.hzR)
     this.selectedButton.set(btn.typ)
+    // If already playing, switch to the new frequency without stopping.
+    if(this.running()) {
+      this.setTone(btn.hzL, btn.hzR)
+    }
+  }
+
+  public play() {
+    const btn = this.btnsChakra.find(b => b.typ === this.selectedButton());
+    if(btn) {
+      this.setTone(btn.hzL, btn.hzR)
+    }
   }
 
   private setTone(hzL: number, hzR: number) {
@@ -207,7 +221,7 @@ export class AppComponent {
     this.updateTone();
   }
   private updateTone() {
-    if(this.running) {
+    if(this.running()) {
     this.osc2.frequency.value = this.rightSignal();
     }
   }
