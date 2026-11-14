@@ -15,10 +15,8 @@ type Btn = {
   standalone: true,
   imports: [CommonModule, RouterOutlet],
   template: `
-    <div class="container">
-      <button class="btn btn--stop" (click)="stop()" [disabled]="!running()">
-        Stop
-      </button>
+    <div class="layout">
+     <div class="container">
       <div class="button-group">
         @for (btn of btnsChakra; track $index) {
             <button (click)="onClickBtn(btn)" class="btn btn--{{btn.typ}}" [class.btn--selected]="btn.typ === selectedButton()">
@@ -34,12 +32,15 @@ type Btn = {
 
       <hr>
 
-      <button (click)="start()">Start</button>
-      <button (click)="stop()">Stop</button>
-
       <input id="leftStereo" type="number" [value]="leftSignal()" (change)="updateLeftSignal($event)" />
       <input id="rightStereo" type="number" [value]="rightSignal()" (change)="updateRightSignal($event)" />
       <input id="dif" type="number" [value]="diff()" (change)="updateDiff($event)" />
+     </div>
+
+     <div class="controls">
+      <button class="btn btn--control" (click)="play()" [disabled]="!selectedButton() || running()">Play</button>
+      <button class="btn btn--control" (click)="stop()" [disabled]="!running()">Stop</button>
+     </div>
     </div>
     <router-outlet></router-outlet>
   `,
@@ -158,7 +159,6 @@ export class AppComponent {
       this.channel1.suspend()
       this.channel2.suspend()
       this.running.set(false)
-      this.selectedButton.set('')
     }
   }
 
@@ -193,12 +193,18 @@ export class AppComponent {
   }
 
   public onClickBtn(btn:Btn) {
-    if(this.running() && btn.typ === this.selectedButton()) {
-      this.stop();
-      return;
-    }
-    this.setTone(btn.hzL, btn.hzR)
     this.selectedButton.set(btn.typ)
+    // If already playing, switch to the new frequency without stopping.
+    if(this.running()) {
+      this.setTone(btn.hzL, btn.hzR)
+    }
+  }
+
+  public play() {
+    const btn = this.btnsChakra.find(b => b.typ === this.selectedButton());
+    if(btn) {
+      this.setTone(btn.hzL, btn.hzR)
+    }
   }
 
   private setTone(hzL: number, hzR: number) {
